@@ -4,7 +4,10 @@ import withData from "../lib/apollo";
 import App, { Container } from "next/app";
 import React from "react";
 
+import AppProvider from '../components/Context/AppProvider';
+
 class MyApp extends App {
+  
   static async getInitialProps({ Component, router, ctx }) {
     let pageProps = {};
     if (Component.getInitialProps) {
@@ -17,9 +20,11 @@ class MyApp extends App {
     const { Component, pageProps, isAuthenticated, ctx } = this.props;
     return (
       <Container>
-        <Layout isAuthenticated={isAuthenticated} {...pageProps}>
-          <Component {...pageProps} />
-        </Layout>
+        <AppProvider>
+          <Layout isAuthenticated={isAuthenticated} {...pageProps}>
+            <Component {...pageProps} />
+          </Layout>
+        </AppProvider>
 
         <style jsx global>
           {`

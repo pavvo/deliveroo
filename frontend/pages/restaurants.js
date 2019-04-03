@@ -2,7 +2,7 @@ import gql from "graphql-tag";
 import { withRouter } from "next/router";
 import { graphql } from "react-apollo";
 import { compose } from "recompose";
-
+import { withContext } from "../components/Context/AppProvider";
 import {
   Button,
   Card,
@@ -15,30 +15,17 @@ import {
   Col,
   Row
 } from "reactstrap";
-
-const GET_RESTAURANT_DISHES = gql`
-  query($id: ID!) {
-    restaurant(id: $id) {
-      id
-      name
-      dishes {
-        id
-        name
-        description
-        price
-        image {
-          url
-        }
-      }
-    }
-  }
-`;
+import Cart from "../components/Cart/Cart";
+import defaultPage from "../components/hocs/defaultPage";
 
 class Restaurants extends React.Component {
   constructor(props) {
     super(props);
   }
 
+  addItem(item) {
+    this.props.context.addItem(item);
+  }
   render() {
     const {
       data: { loading, error, restaurant },
@@ -47,9 +34,9 @@ class Restaurants extends React.Component {
       isAuthenticated
     } = this.props;
 
-    if (error) {
-        console.log(error.message)
-    };
+    if (error){
+      console.log(error)
+    } ;
 
     if (restaurant) {
       return (
@@ -73,7 +60,11 @@ class Restaurants extends React.Component {
                       <CardText>{res.description}</CardText>
                     </CardBody>
                     <div className="card-footer">
-                      <Button outline color="primary">
+                      <Button
+                        onClick={this.addItem.bind(this, res)}
+                        outline
+                        color="primary"
+                      >
                         + Add To Cart
                       </Button>
 
@@ -102,6 +93,11 @@ class Restaurants extends React.Component {
                 ))}
               </div>
             </Col>
+            <Col xs="3" style={{ padding: 0 }}>
+              <div>
+                <Cart isAuthenticated={isAuthenticated} />
+              </div>
+            </Col>
           </Row>
         </>
       );
@@ -110,8 +106,30 @@ class Restaurants extends React.Component {
   }
 }
 
+const GET_RESTAURANT_DISHES = gql`
+  query($id: ID!) {
+    restaurant(id: $id) {
+      id
+      name
+      dishes {
+        id
+        name
+        description
+        price
+        image {
+          url
+        }
+      }
+    }
+  }
+`;
+// The `graphql` wrapper executes a GraphQL query and makes the results
+// available on the `data` prop of the wrapped component (RestaurantList)
+
 export default compose(
   withRouter,
+  defaultPage,
+  withContext,
   graphql(GET_RESTAURANT_DISHES, {
     options: props => {
       return {
